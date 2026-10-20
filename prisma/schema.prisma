@@ -1,0 +1,294 @@
+// Modelo de datos de la tienda.
+// Convenciones:
+//   - Todos los montos son Int en centavos de USD (nunca Float).
+//   - Los precios de productos y envío son PVP: IVA incluido, como exige la
+//     Ley Orgánica de Defensa del Consumidor. El IVA se desglosa en el checkout.
+//   - Las tasas son Int en puntos básicos: 1500 = 15 %.
+//   - Los pedidos guardan una copia (snapshot) de precios y datos para que el
+//     historial no cambie si luego se edita un producto o la tasa de IVA.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PAYPHONE
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING // creado, esperando acción del cliente
+  IN_REVIEW // comprobante subido, esperando revisión del admin
+  APPROVED
+  REJECTED
+  FAILED // Payphone rechazó o canceló
+}
+
+enum IdType {
+  CEDULA
+  RUC
+  CONSUMIDOR_FINAL
+}
+
+// ─── Usuarios ───────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         Role     @default(CUSTOMER)
+  orders       Order[]
+  cart         Cart?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─── Catálogo ───────────────────────────────────────────────────────────────
+
+model Category {
+  id             String    @id @default(cuid())
+  name           String
+  slug           String    @unique
+  description    String?
+  imageUrl       String?
+  imageStorageId String? // clave en el almacenamiento, para borrar la imagen al reemplazarla
+  sortOrder      Int       @default(0)
+  isActive       Boolean   @default(true)
+  products       Product[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  name           String
+  slug           String           @unique
+  description    String           @db.Text
+  price          Int // centavos, PVP con IVA incluido
+  compareAtPrice Int? // precio "antes" para mostrar descuentos
+  isActive       Boolean          @default(true)
+  isFeatured     Boolean          @default(false)
+  categoryId     String
+  category       Category         @relation(fields: [categoryId], references: [id])
+  images         ProductImage[]
+  variants       ProductVariant[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([categoryId, isActive])
+  @@index([isFeatured, isActive])
+  @@index([price])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  storageId String? // public_id de Cloudinary o ruta local, para poder borrarla
+  alt       String
+  color     String? // si la imagen corresponde a un color de variante
+  position  Int     @default(0)
+
+  @@index([productId, position])
+}
+
+model ProductVariant {
+  id        String     @id @default(cuid())
+  productId String
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku       String     @unique
+  size      String? // "S", "M", "57 cm", "Única"
+  color     String?
+  colorHex  String?
+  price     Int? // si es null se usa Product.price
+  stock     Int        @default(0)
+  isActive  Boolean    @default(true)
+  cartItems CartItem[]
+
+  @@unique([productId, size, color])
+  @@index([stock])
+}
+
+// ─── Carrito ────────────────────────────────────────────────────────────────
+// Un visitante anónimo tiene un Cart identificado por una cookie httpOnly.
+// Al iniciar sesión, ese carrito se fusiona con el del usuario.
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+
+  @@unique([cartId, variantId])
+}
+
+// ─── Pedidos y pagos ────────────────────────────────────────────────────────
+
+model Order {
+  id            String        @id @default(cuid())
+  number        Int           @unique @default(autoincrement()) // "Pedido #1042"
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  status        OrderStatus   @default(PENDING_PAYMENT)
+  paymentMethod PaymentMethod
+
+  // Envío (copia al momento de la compra)
+  shipName      String
+  shipPhone     String
+  shipProvince  String
+  shipCity      String
+  shipAddress   String
+  shipReference String?
+
+  // Facturación
+  billIdType IdType
+  billId     String // "9999999999999" para consumidor final (código del SRI)
+  billName   String
+  billEmail  String
+
+  // Montos en centavos, congelados al crear el pedido
+  subtotal     Int // base imponible (sin IVA)
+  shippingCost Int
+  taxRateBps   Int
+  taxAmount    Int
+  total        Int
+
+  trackingCode String?
+  items        OrderItem[]
+  payments     Payment[]
+  events       OrderEvent[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  paidAt       DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId    String? // null si la variante se borró; el pedido conserva su copia
+  productName  String
+  variantLabel String // "M / Azul"
+  sku          String
+  unitPrice    Int
+  quantity     Int
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  amount          Int
+  clientTxId      String?       @unique // id que enviamos a Payphone
+  providerTxId    String? // id que devuelve Payphone
+  providerRaw     Json? // respuesta completa, para auditoría
+  proofStorageId  String? // comprobante de transferencia (archivo privado)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+// Historial de cambios de estado: quién, cuándo y por qué.
+model OrderEvent {
+  id        String       @id @default(cuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  from      OrderStatus?
+  to        OrderStatus
+  note      String?
+  actorId   String?
+  createdAt DateTime     @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+// ─── Configuración de la tienda ─────────────────────────────────────────────
+
+model ShippingRate {
+  provinceCode  String @id // código INEC: "17" = Pichincha
+  provinceName  String
+  cost          Int // PVP con IVA incluido
+  estimatedDays String // "1-2 días hábiles"
+}
+
+// Fila única (id = 1)
+model StoreSettings {
+  id                Int     @id @default(1)
+  storeName         String
+  tagline           String?
+  logoUrl           String?
+  logoStorageId     String?
+  whatsappNumber    String // formato internacional sin "+": 5939XXXXXXXX
+  contactEmail      String
+  address           String?
+  taxRateBps        Int     @default(1500)
+  lowStockThreshold Int     @default(5)
+  freeShippingFrom  Int? // envío gratis desde este subtotal (centavos)
+}
+
+model BankAccount {
+  id            String  @id @default(cuid())
+  bankName      String
+  accountType   String // "Ahorros" | "Corriente"
+  accountNumber String
+  holderName    String
+  holderId      String
+  isActive      Boolean @default(true)
+  sortOrder     Int     @default(0)
+}
+
+// ─── Seguridad ──────────────────────────────────────────────────────────────
+
+// Contador de ventana fija para limitar intentos (login, registro).
+// Vive en Postgres porque en serverless la memoria no se comparte entre instancias.
+model RateLimit {
+  key     String   @id // ej. "login:email:ana@x.com" o "login:ip:1.2.3.4"
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

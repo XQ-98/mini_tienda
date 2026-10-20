@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <rect width="800" height="1000" fill="#EEE6DA"/>
+  <ellipse cx="400" cy="900" rx="260" ry="26" fill="#000" opacity="0.06"/>
+  <g >
+        <path d="M300 420 Q300 220 400 220 Q500 220 500 420" fill="none" stroke="#202020" stroke-width="30" stroke-linecap="round"/>
+        <rect x="210" y="400" width="380" height="400" rx="44" fill="#2B2B2B" stroke="#202020" stroke-width="6"/>
+        <polyline points="240,486 264,514 288,486 312,514 336,486 360,514 384,486 408,514 432,486 456,514 480,486 504,514 528,486 552,514" fill="none" stroke="#a0a0a0" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M250 589 L261 600 L250 611 L239 600 Z" fill="#a0a0a0"/><path d="M290 589 L301 600 L290 611 L279 600 Z" fill="#a0a0a0"/><path d="M330 589 L341 600 L330 611 L319 600 Z" fill="#a0a0a0"/><path d="M370 589 L381 600 L370 611 L359 600 Z" fill="#a0a0a0"/><path d="M410 589 L421 600 L410 611 L399 600 Z" fill="#a0a0a0"/><path d="M450 589 L461 600 L450 611 L439 600 Z" fill="#a0a0a0"/><path d="M490 589 L501 600 L490 611 L479 600 Z" fill="#a0a0a0"/><path d="M530 589 L541 600 L530 611 L519 600 Z" fill="#a0a0a0"/>
+        <polyline points="240,686 264,714 288,686 312,714 336,686 360,714 384,686 408,714 432,686 456,714 480,686 504,714 528,686 552,714" fill="none" stroke="#a0a0a0" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/></g>
+</svg>

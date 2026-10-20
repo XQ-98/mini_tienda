@@ -1,0 +1,6 @@
+# Fin de línea LF en el repositorio para todos (Windows incluido): las
+# migraciones de Prisma validan un checksum del archivo y el despliegue es Linux.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

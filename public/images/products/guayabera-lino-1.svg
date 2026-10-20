@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <rect width="800" height="1000" fill="#EAE4DC"/>
+  <ellipse cx="400" cy="900" rx="260" ry="26" fill="#000" opacity="0.06"/>
+  <g >
+        <path d="M300 200 L230 222 L110 370 L200 432 L255 365 L255 830 L545 830 L545 365 L600 432 L690 370 L570 222 L500 200 Q400 275 300 200 Z" fill="#F7F3EA" stroke="#b9b6b0" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M300 200 Q400 275 500 200 L470 196 Q400 245 330 196 Z" fill="#b9b6b0"/>
+        <polyline points="320,290 340,310 360,290 380,310 400,290 420,310 440,290 460,310 480,290" fill="none" stroke="#1F3A5F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M340 332 L348 340 L340 348 L332 340 Z" fill="#1F3A5F"/><path d="M366 332 L374 340 L366 348 L358 340 Z" fill="#1F3A5F"/><path d="M392 332 L400 340 L392 348 L384 340 Z" fill="#1F3A5F"/><path d="M418 332 L426 340 L418 348 L410 340 Z" fill="#1F3A5F"/><path d="M444 332 L452 340 L444 348 L436 340 Z" fill="#1F3A5F"/><path d="M470 332 L478 340 L470 348 L462 340 Z" fill="#1F3A5F"/>
+        <line x1="400" y1="260" x2="400" y2="830" stroke="#b9b6b0" stroke-width="3" stroke-dasharray="2 22"/></g>
+</svg>

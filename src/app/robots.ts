@@ -1,0 +1,17 @@
+import type { MetadataRoute } from "next";
+
+import { getSiteUrl } from "@/lib/site";
+
+export default function robots(): MetadataRoute.Robots {
+  const site = getSiteUrl();
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      // Páginas privadas o sin valor para buscadores
+      disallow: ["/admin", "/cuenta", "/checkout", "/carrito", "/ingresar", "/registro", "/api/", "/pago-simulado"],
+    },
+    sitemap: `${site}/sitemap.xml`,
+    host: site,
+  };
+}
