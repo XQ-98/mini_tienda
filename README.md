@@ -4,7 +4,7 @@ Tienda en línea completa para un negocio de ropa y accesorios artesanales de Ot
 
 Pensada primero para el celular, que es desde donde compra la mayoría.
 
-![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=fff) ![Prisma 7](https://img.shields.io/badge/Prisma-7-2d3748?logo=prisma) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169e1?logo=postgresql&logoColor=fff) ![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=fff) ![Pruebas](https://img.shields.io/badge/pruebas-377-2e7d32) ![WCAG 2.1 AA](https://img.shields.io/badge/accesibilidad-WCAG_2.1_AA-2e7d32)
+![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=fff) ![Prisma 7](https://img.shields.io/badge/Prisma-7-2d3748?logo=prisma) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169e1?logo=postgresql&logoColor=fff) ![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?logo=tailwindcss&logoColor=fff) ![Pruebas](https://img.shields.io/badge/pruebas-378-2e7d32) ![WCAG 2.1 AA](https://img.shields.io/badge/accesibilidad-WCAG_2.1_AA-2e7d32)
 
 > **Demo en vivo:** _pendiente de publicar_ · Los pagos son simulados y los datos se reinician cada noche.
 >
@@ -101,7 +101,7 @@ docs/                   seguridad y capturas
 | --- | --- | --- |
 | Unitarias (Vitest) | Carrito e IVA, envío, cédula y RUC, cantones, estados del pedido, fechas en hora de Ecuador, validaciones, open redirect, archivos, JSON-LD | 242 |
 | Integración (Vitest + Postgres real) | Carrito (IDOR, precios), pedidos, descuento de stock con concurrencia e idempotencia, Payphone, transferencias, panel, rate limiting, login | 80 |
-| E2E (Playwright, build de producción, celular) | Flujo completo de compra, panel, SEO, accesibilidad (axe) y ataques reales: CSRF, XSS, IDOR, fuerza bruta, pagos falsificados, acciones de admin sin rol, archivos disfrazados | 55 |
+| E2E (Playwright, build de producción, celular) | Flujo completo de compra, panel, SEO, accesibilidad (axe) y ataques reales: CSRF, XSS, IDOR, fuerza bruta, pagos falsificados, acciones de admin sin rol, archivos disfrazados | 56 |
 
 ```bash
 npm test               # unitarias + integración (crea y migra la base tienda_test)
@@ -117,12 +117,20 @@ Requisitos: Node.js 22+ y Docker Desktop.
 
 ```bash
 npm install                 # instala y genera el cliente de Prisma
-cp .env.example .env        # completa AUTH_SECRET:  npx auth secret
+cp .env.example .env        # y completa AUTH_SECRET (ver abajo)
 npm run db:up               # PostgreSQL 17 en Docker (puerto 5433)
 npm run db:migrate          # migraciones
 npm run db:seed             # 20 productos, 6 categorías y usuarios de prueba
 npm run dev                 # http://localhost:3000
 ```
+
+Para generar `AUTH_SECRET` (cualquier sistema operativo):
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+> No uses `npx auth secret`: ese comando hoy instala el CLI de Better Auth y genera `BETTER_AUTH_SECRET`, una variable que esta app no lee.
 
 En local los pagos con tarjeta usan una pasarela simulada (`PAYPHONE_MODE="mock"`) y las imágenes se guardan en `uploads/`.
 
@@ -143,7 +151,7 @@ En local los pagos con tarjeta usan una pasarela simulada (`PAYPHONE_MODE="mock"
    | --- | --- |
    | `DATABASE_URL` | URL pooled de Neon |
    | `DIRECT_URL` | URL directa de Neon (la usan las migraciones) |
-   | `AUTH_SECRET` | `npx auth secret` |
+   | `AUTH_SECRET` | un secreto aleatorio (comando de la sección anterior) |
    | `NEXT_PUBLIC_SITE_URL` | URL pública, p. ej. `https://telar-andino.vercel.app` |
    | `STORAGE_DRIVER` | `cloudinary` |
    | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | de Cloudinary |

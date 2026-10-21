@@ -1,5 +1,5 @@
 import { expect, test, variantStock } from "./fixtures";
-import { addToCart, buyAsNewCustomer, fillShipping, openAdmin, registerUser, uniqueEmail } from "./helpers";
+import { ADMIN, addToCart, buyAsNewCustomer, fillShipping, login, openAdmin, registerUser, uniqueEmail } from "./helpers";
 
 // Panel de administración: los flujos que usa el dueño de la tienda a diario.
 // El cliente usa el celular (fixture `page`); el admin, un navegador de escritorio aparte.
@@ -150,6 +150,28 @@ test.describe("Panel: configuración y resumen", () => {
     await expect(admin.getByTestId("dashboard-stats")).toContainText("Ventas de hoy");
     await expect(admin.getByText("Ventas de los últimos 30 días")).toBeVisible();
     await expect(admin.getByTestId("low-stock").getByRole("link").first()).toBeVisible();
+    await context.close();
+  });
+});
+
+test.describe("Panel: sesión", () => {
+  test("cerrar sesión desde el panel (escritorio y celular) y volver a pedir login", async ({ browser, baseURL }) => {
+    const { page: admin, context } = await openAdmin(browser, baseURL);
+    await admin.goto("/admin");
+    await admin.getByRole("button", { name: "Cerrar sesión" }).click();
+    await admin.waitForURL((u) => u.pathname === "/");
+    await admin.goto("/admin");
+    await expect(admin).toHaveURL(/\/ingresar\?callbackUrl=%2Fadmin$/);
+
+    // En celular el botón está dentro del menú lateral
+    await admin.setViewportSize({ width: 390, height: 844 });
+    await login(admin, ADMIN.email, ADMIN.password, "/admin");
+    await admin.waitForURL((u) => u.pathname === "/admin");
+    await admin.getByRole("button", { name: "Abrir menú" }).click();
+    await admin.getByRole("dialog").getByRole("button", { name: "Cerrar sesión" }).click();
+    await admin.waitForURL((u) => u.pathname === "/");
+    await admin.goto("/admin/pedidos");
+    await expect(admin).toHaveURL(/\/ingresar/);
     await context.close();
   });
 });

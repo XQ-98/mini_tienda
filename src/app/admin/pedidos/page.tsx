@@ -39,7 +39,7 @@ async function OrdersContent({ searchParams }: Pick<PageProps<"/admin/pedidos">,
               )}
             >
               {f.label}
-              <span className={cn("text-xs tabular-nums", filter === key ? "opacity-80" : "text-muted-foreground")}>
+              <span className={cn("text-xs tabular-nums", filter !== key && "text-muted-foreground")}>
                 {counts[key as OrderFilter]}
               </span>
             </Link>

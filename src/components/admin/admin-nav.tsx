@@ -13,9 +13,13 @@ import {
   ShoppingBagIcon,
 } from "lucide-react";
 
+import { LogoutButton } from "@/components/tienda/auth/logout-button";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+
+// Mismo aspecto que las opciones del menú
+const LOGOUT_CLASS = "justify-start gap-3 px-3 font-normal text-muted-foreground";
 
 const NAV = [
   { href: "/admin", label: "Resumen", icon: LayoutDashboardIcon, exact: true },
@@ -79,6 +83,9 @@ export function AdminSidebar({ storeName }: { storeName: string }) {
         <span className="text-xs text-muted-foreground">Panel de administración</span>
       </Link>
       <NavLinks />
+      <div className="mt-auto border-t pt-4">
+        <LogoutButton className={LOGOUT_CLASS} />
+      </div>
       </aside>
     </div>
   );
@@ -100,6 +107,9 @@ export function AdminMobileBar({ storeName }: { storeName: string }) {
           </SheetHeader>
           <div className="px-4">
             <NavLinks onNavigate={() => setOpen(false)} />
+            <div className="mt-4 border-t pt-4">
+              <LogoutButton className={LOGOUT_CLASS} />
+            </div>
           </div>
         </SheetContent>
       </Sheet>

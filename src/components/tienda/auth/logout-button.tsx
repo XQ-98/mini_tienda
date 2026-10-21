@@ -4,14 +4,15 @@ import { useTransition } from "react";
 import { Loader2Icon, LogOutIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { logoutAction } from "@/server/actions/auth";
 
-export function LogoutButton() {
+export function LogoutButton({ className }: { className?: string }) {
   const [pending, start] = useTransition();
   return (
     <Button
       variant="ghost"
-      className="h-10 w-full"
+      className={cn("h-10 w-full", className)}
       disabled={pending}
       onClick={() =>
         start(async () => {
